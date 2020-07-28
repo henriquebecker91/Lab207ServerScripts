@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Only configuration needed.
+user_portal='hbecker'
+user_server='henrique'
+
+if [ -z $user_portal ] || [ -z $user_server ]; then
+  echo "Please, edit the user_* variables inside this script."
+  exit 1
+fi
+
+if [ $# -lt 1 ]; then
+  echo "Usage: send_to_all <at least one file or directory>"
+  exit 1
+fi
+
+# NOTE: the send_to_all script does not reuse the send_to because if this is
+# done the script open <servers number> conections to portal in sequence,
+# instead of reusing the same, and this can ban new connections for a while
+# (learnt the hard way), also, we transfer between the user computer and the
+# portal six times instead of only one.
+
+# Dark magic for removing the trailing slashes from all arguments and then
+# quoting them without losing track of how many arguments really exist if
+# some arguments have spaces in the middle of them.
+paths=("${@%/}")
+#paths=("${paths[@]@Q}")
+
+OLD_SERVERS="shiva ifrit malboro tiamat0 tiamat1 tiamat2"
+NEW_SERVERS="ramuh ixion yojimbo odin leviathan"
+if [ -z "$LAB207SERVERS" ]; then
+	script_name=`basename $BASH_SOURCE`
+	if [ $script_name == "send_to_old" ]; then
+		LAB207SERVERS="$OLD_SERVERS"
+	else
+		if [ $script_name == "send_to_new" ]; then
+			LAB207SERVERS="$NEW_SERVERS"
+		else
+			LAB207SERVERS="$OLD_SERVERS $NEW_SERVERS"
+		fi
+	fi
+fi
+
+color='\033[1;32m'
+no_color='\033[0m'
+echo -e "${color}from local to portal${no_color}"
+rsync -av --relative --progress "${paths[@]}" "$user_portal@portal.inf.ufrgs.br:/home/pos/$user_portal/"
+ssh -T ${user_portal}@portal.inf.ufrgs.br <<-ENDSSH
+  cd /home/pos/$user_portal/ # assume nothing
+  for server in $LAB207SERVERS; do
+    echo -e "${color}from portal to \${server}${no_color}"
+    rsync -av --progress ${paths[@]@Q} "$user_server@\$server:/home/$user_server/"
+  done
+  rm -rf ${paths[@]@Q}
+ENDSSH
+

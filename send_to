@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Only configuration needed.
+user_portal='hbecker'
+user_server='henrique'
+
+if [ -z $user_portal ] || [ -z $user_server ]; then
+  echo "Please, edit the user_* variables inside this script."
+  exit 1
+fi
+
+if [ $# -lt 2 ]; then
+  echo "Usage: send_to <server name> <at least one file or directory>"
+  exit 1
+fi
+
+server=$1
+shift 1
+
+# Note that the first rsync command uses '--relative' and the second do not.
+# The intent behind the first is to avoid needing to apply basename to every
+# argument in order to copy them from portal (and to remove them after). The
+# intent behind the second is to not recreate the structure in the final
+# destination.
+
+# Dark magic for removing the trailing slashes from all arguments and then
+# quoting them without losing track of how many arguments really exist if
+# some arguments have spaces in the middle of them.
+paths=("${@%/}")
+#paths=("${paths[@]@Q}")
+
+color='\033[1;32m'
+no_color='\033[0m'
+echo -e "${color}from local to portal${no_color}"
+rsync -av --relative --progress "${paths[@]}" "$user_portal@portal.inf.ufrgs.br:/home/pos/$user_portal/"
+ssh -T ${user_portal}@portal.inf.ufrgs.br <<-ENDSSH
+  echo -e "${color}from portal to ${server}${no_color}"
+  cd /home/pos/$user_portal/ # assume nothing
+  rsync -av --progress ${paths[@]@Q} "$user_server@$server:/home/$user_server/"
+  rm -rf ${paths[@]@Q}
+ENDSSH
+

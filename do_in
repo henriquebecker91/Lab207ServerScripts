@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Only configuration needed.
+user_portal='hbecker'
+user_server='henrique'
+
+# for login without password the key was exported, see https://serverfault.com/questions/241588/how-to-automate-ssh-login-with-password
+# for an workaround necessary for tiamat1 for some reason, see https://superuser.com/questions/421004/how-to-fix-warning-about-ecdsa-host-key#421024
+# for disabling the login banner a .hushlogin was created at home, see https://unix.stackexchange.com/questions/96975/disable-ssh-banner-for-specific-users-or-ips#96982
+# for the #{@@Q} (using only "$@" gives problems if some of the arguments was quoted because it had spaces), see https://stackoverflow.com/questions/1668649/how-to-keep-quotes-in-bash-arguments#answer-39463371 
+
+if [ -z $user_portal ] || [ -z $user_server ]; then
+  echo "Please, edit the user_* variables inside this script."
+  exit 1
+fi
+
+server=$1
+shift 1
+
+motd_supresser='/bin/bash'
+if [ $# -lt 1 ]; then
+  echo "No command given. Will connect normally (show motd) and disconnect."
+  motd_supresser=''
+fi
+
+ssh -T $user_portal@portal.inf.ufrgs.br <<-ENDSSH
+ssh -T "$user_server@$server" $motd_supresser <<-ENDSSH2
+${@@Q}
+ENDSSH2
+ENDSSH
+

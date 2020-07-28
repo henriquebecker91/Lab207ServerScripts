@@ -1,0 +1,61 @@
+#!/bin/bash
+# BASH_SOURCE requires bash version 3+
+
+# Only configuration needed.
+user_portal='hbecker'
+user_server='henrique'
+
+if [ -z $user_portal ] || [ -z $user_server ]; then
+  echo "Please, edit the user_* variables inside this script."
+  exit 1
+fi
+
+motd_supresser='/bin/bash'
+if [ $# -lt 1 ]; then
+  echo "No command given. Will connect normally (show motd) and disconnect."
+  motd_supresser=''
+fi
+
+# for login without password the key was exported, see https://serverfault.com/questions/241588/how-to-automate-ssh-login-with-password
+# for an workaround necessary for tiamat1 for some reason, see https://superuser.com/questions/421004/how-to-fix-warning-about-ecdsa-host-key#421024
+# for disabling the login banner a .hushlogin was created at home, see https://unix.stackexchange.com/questions/96975/disable-ssh-banner-for-specific-users-or-ips#96982
+# for the #{@@Q} (using only "$@" gives problems if some of the arguments was quoted because it had spaces), see https://stackoverflow.com/questions/1668649/how-to-keep-quotes-in-bash-arguments#answer-39463371 
+
+# color reference: https://stackoverflow.com/questions/5947742/how-to-change-the-output-color-of-echo-in-linux#5947802
+
+# NOTE: the do_in_all script does not reuse the do_in because if this is done
+# the script open <servers number> conections to portal in sequence, instead
+# of reusing the same, and this can ban new connections for a while (learnt
+# the hard way).
+
+# If the ambient variable LAB207SERVERS is non-empty, use this list of
+# servers and ignore the script name.
+# If the name of the script is send_to_old, just send to the old servers,
+# the same is true for send_to_new and the new servers. If it is not any of
+# those names then the script will send to all the servers.
+OLD_SERVERS="shiva ifrit malboro tiamat0 tiamat1 tiamat2"
+NEW_SERVERS="ramuh ixion yojimbo odin leviathan"
+if [ -z "$LAB207SERVERS" ]; then
+	script_name=`basename $BASH_SOURCE`
+	if [ $script_name == "do_in_old" ]; then
+		LAB207SERVERS="$OLD_SERVERS"
+	else
+		if [ $script_name == "do_in_new" ]; then
+			LAB207SERVERS="$NEW_SERVERS"
+		else
+			LAB207SERVERS="$OLD_SERVERS $NEW_SERVERS"
+		fi
+	fi
+fi
+
+color='\033[1;32m'
+no_color='\033[0m'
+ssh -T $user_portal@portal.inf.ufrgs.br <<-ENDSSH
+for server in $LAB207SERVERS; do
+echo -e "$color\$server$no_color"
+ssh -T "$user_server@\$server" $motd_supresser <<-ENDSSH2
+${@@Q}
+ENDSSH2
+done
+ENDSSH
+
