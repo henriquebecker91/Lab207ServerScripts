@@ -1,15 +1,15 @@
 # Lab207ServerScripts
 
-The main scripts in this repository are: `send_to`, `do_in`, `send_to_all`, and `do_in_all`. As these scripts connect first to the portal machine, they work no matter if you are inside the laboratory (UFRGS intranet) or outside of it (at home, for example).
+The main scripts in this repository are: `send_to`, `bring_from`, `do_in`, `send_to_all`, and `do_in_all`. As these scripts connect first to the portal machine, they work no matter if you are inside the laboratory (UFRGS intranet) or outside of it (at home, for example).
 
 To work, all scripts need:
 
 1. Editing the variables `user_portal` and `user_server` inside them (`user_portal` is your user in `portal.inf.ufrgs.br`, and `user_server` is your user in the servers, i.e., shiva, ramuh, etc...);
 2. You need to be able to login into the portal machine from your machine without typing your password (in linux just do `$ ssh-copy-id user_portal@portal.inf.ufrgs.br` in your machine, with your `portal_user`, your password will be asked).
 3. You need to be able to login into the servers from the portal machine without typing your password (connect to the portal machine by ssh and then do the same you did for the previous step, but for your `user_server`, and using the server name instead of `portal.inf.ufrgs.br`, the server password will be asked).
-4. The command `ssh` is necessary for all scripts, and `rsync` is needed for the `send_to*` scripts.
+4. The command `ssh` is necessary for all scripts, and `rsync` is needed for the `send_to`/`send_to_all`/`bring_from` scripts.
 
-The `do_in` and `send_to` scripts take a single `server` as first argument.
+The `do_in`, `send_to`, and `bring_from` scripts take a single `server` as first argument.
 
 ```bash
 $ do_in ramuh ls
@@ -22,9 +22,16 @@ from portal to ramuh
 ...
 $ do_in ramuh ls
 empty_file ...
+$ rm empty_file
+$ bring_from ramuh empty_file
+...
+$ ls empty_file
+empty_file
 ```
 
-The files are sent to your home directory, and a copy of them is kept inside the portal. The script support multiple files and/or folders. However, sending a folder, deleting some files from inside your local copy, and sending again, will not have the desired effect (i.e., the `send_to` will NOT remove the files from the portal and server folders). To do this you need to remove the folder from *both* portal and the server. This is the natural behaviour of `rsync`, and a failsafe. Can be worked around sending tarballs/zips (explicit files are always replaced).
+Just calling `do_in server` will show the motd of the server and logout, what is useful to know if your experiments finished or if the server is free.
+
+The files are "sent to"/"brought from" your home directory, and a copy of them is kept inside the portal. The scripts support multiple files and/or folders. However, sending a folder, deleting some files from inside your local copy, and sending again, will not have the desired effect (i.e., the `send_to` will NOT remove the files from the portal and server folders). To do this you need to remove the folder from *both* portal and the server (the same applies to `bring_from`, but you need to delete the folders inside portal and your local computer). This is the natural behaviour of `rsync`, and a failsafe. Can be worked around sending tarballs/zips (explicit files are always replaced).
 
 To execute commands with redirection using `do_in`:
 ```bash

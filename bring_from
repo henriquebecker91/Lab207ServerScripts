@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Connect to the portal machine at UFRGS, copy experiments from my personal
+# machine in the research group laboratory to the portal machine, and then
+# to the computer from where I'm running this script.
+
+user_portal='hbecker'
+user_server='henrique'
+
+server=$1
+file_or_dir=${2%/}
+ssh -T $user_portal@portal.inf.ufrgs.br <<-ENDSSH
+  rsync -a --progress "$user_server@$server:/home/$user_server/$file_or_dir" .
+ENDSSH
+rsync -a --progress "$user_portal@portal.inf.ufrgs.br:/home/pos/$user_portal/`basename $file_or_dir`" .
+
