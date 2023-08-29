@@ -1,3 +1,8 @@
+By end of Aug 2023, the author of this repository decided to abandon 
+GitHub (Microsoft and 2FA shenaningans) and adopt CodeBerg. While not 
+deleted, there is no guarantee the GitHub repo is updated. Check the 
+official repo at: https://codeberg.org/hbecker/Lab207ServerScripts
+
 # Lab207ServerScripts
 
 The main scripts in this repository are: `send_to`, `bring_from`, `do_in`, `send_to_all`, and `do_in_all`. As these scripts connect first to the portal machine, they work no matter if you are inside the laboratory (UFRGS intranet) or outside of it (at home, for example).
