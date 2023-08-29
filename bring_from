@@ -9,8 +9,14 @@ user_server='henrique'
 
 server=$1
 file_or_dir=${2%/}
-ssh -T $user_portal@portal.inf.ufrgs.br <<-ENDSSH
-  rsync -a --progress "$user_server@$server:/home/$user_server/$file_or_dir" .
+# The copy of the files to the portal takes the '--delete' flag so any
+# previous garbage in a folder with the same name (inside portal) will not be
+# copied by the second rsync (from portal to the local machine).
+ssh -oHostKeyAlgorithms=+ssh-rsa -T $user_portal@portal.inf.ufrgs.br <<-ENDSSH
+  rsync -a --delete --progress "$user_server@$server:/home/$user_server/$file_or_dir" .
 ENDSSH
-rsync -a --progress "$user_portal@portal.inf.ufrgs.br:/home/pos/$user_portal/`basename $file_or_dir`" .
+# This copy does not take '--delete' to avoide deleting something of
+# importance on the local machine. The files in portal (from previous
+# transfers) are not regarded as important as files in the local machine.
+rsync -a --progress -e "ssh -oHostKeyAlgorithms=+ssh-rsa" "$user_portal@portal.inf.ufrgs.br:/home/pos/$user_portal/`basename $file_or_dir`" .
 

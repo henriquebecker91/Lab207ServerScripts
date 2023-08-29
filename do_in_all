@@ -34,7 +34,7 @@ fi
 # the same is true for send_to_new and the new servers. If it is not any of
 # those names then the script will send to all the servers.
 OLD_SERVERS="shiva ifrit malboro tiamat0 tiamat1 tiamat2"
-NEW_SERVERS="ramuh ixion yojimbo odin leviathan"
+NEW_SERVERS="panku ramuh ixion yojimbo odin leviathan bahamut"
 if [ -z "$LAB207SERVERS" ]; then
 	script_name=`basename $BASH_SOURCE`
 	if [ $script_name == "do_in_old" ]; then
@@ -50,7 +50,7 @@ fi
 
 color='\033[1;32m'
 no_color='\033[0m'
-ssh -T $user_portal@portal.inf.ufrgs.br <<-ENDSSH
+ssh -oHostKeyAlgorithms=+ssh-rsa -T $user_portal@portal.inf.ufrgs.br <<-ENDSSH
 for server in $LAB207SERVERS; do
 echo -e "$color\$server$no_color"
 ssh -T "$user_server@\$server" $motd_supresser <<-ENDSSH2
